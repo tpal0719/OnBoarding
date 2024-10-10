@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Getter
 @Table(name = "users")
@@ -14,9 +15,23 @@ public class User extends TimeStamped {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String email;
+    private String username;
 
-    @Column(nullable = false)
+    private String nickname;
+
     private String password;
+
+    private String refreshToken;
+
+    @Enumerated(value = EnumType.STRING)
+    private UserRole userRole;
+
+
+    public User(String username, String nickname, String password, UserRole userRole) {
+        this.username = username;
+        this.nickname = nickname;
+        this.password = password;
+        this.userRole = userRole;
+    }
+
 }

@@ -4,6 +4,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
+import com.semi.onboarding.domain.user.entity.UserRole;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class JwtUtil {
     private final long REFRESH_TOKEN_EXPIRE_TIME = 14 * 24 * 60 * 60 * 1000L;
 
 
-    @Value("${jwt.secret.key}")
+    @Value("${jwt-secret-key}")
     private String secretKey;
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -57,9 +58,45 @@ public class JwtUtil {
                 .compact();  // 토큰 생성
     }
 
+    // accessToken 생성
+    public String createAccessToken(String username, UserRole userRole) {
+        Date date = new Date();
+
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(username)
+                .claim(AUTHORIZATION_KEY, userRole)
+                .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRE_TIME))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+    }
+
+    // accessToken 생성
+    public String createRefreshToken(String userId, UserRole role){
+        Date date = new Date();
+
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(userId)
+                .claim(AUTHORIZATION_KEY, role)
+                .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRE_TIME))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+    }
+
+    // 토큰을 HTTP 요청 헤더에서 가져오기
+    // Bearer 로 시작하는 토큰만 유효한 것으로 간주하고, 접두어를 제거한 후 반환
+    public String getAccessTokenFromHeader(HttpServletRequest request){
+        String accessToken = request.getHeader(AUTH_ACCESS_HEADER);
+        if (StringUtils.hasText(accessToken) && accessToken.startsWith(BEARER_PREFIX)) {
+            return accessToken.substring(BEARER_PREFIX.length());
+        }
+        return null;
+    }
+
 
     // 토큰 유효성 검사
-    public boolean validateTokenInternal(String token) {
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
@@ -75,16 +112,13 @@ public class JwtUtil {
         return false;
     }
 
-    // 토큰을 HTTP 요청 헤더에서 가져오기
-    // Bearer 로 시작하는 토큰만 유효한 것으로 간주하고, 접두어를 제거한 후 반환
-    public String getAccessTokenFromHeader(HttpServletRequest request){
-        String accessToken = request.getHeader(AUTH_ACCESS_HEADER);
-        if (StringUtils.hasText(accessToken) && accessToken.startsWith(BEARER_PREFIX)) {
-            return accessToken.substring(BEARER_PREFIX.length());
-        }
-        return null;
-    }
 
+
+
+    // 토큰에서 사용자 정보 가져오기
+    public Claims getUserInfoFromToken(String token){
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    }
 
     // 응답 헤더에 accessToken 추가
     public void setHeaderAccessToken(HttpServletResponse response, String accessToken){

@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name : com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/onboarding
+    username: ${DB-ID}
+    password: ${DB-PW}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        highlight_sql : true
+
+jwt-secret-key : ${JWT-SECRET-KEY}
