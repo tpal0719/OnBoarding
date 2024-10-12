@@ -2,8 +2,8 @@ spring:
   datasource:
     driver-class-name : com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/onboarding
-    username: ${DB-ID}
-    password: ${DB-PW}
+    username: ${DB_ID}
+    password: ${DB_PW}
 
   jpa:
     hibernate:
@@ -13,4 +13,6 @@ spring:
         show_sql: true
         highlight_sql : true
 
-jwt-secret-key : ${JWT-SECRET-KEY}
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
