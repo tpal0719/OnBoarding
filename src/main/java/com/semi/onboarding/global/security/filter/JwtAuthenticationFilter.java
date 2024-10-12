@@ -20,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -69,12 +70,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseMessage.<String>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("로그인 성공")
-                .data(username)
-                .build())
-        );
+        // JSON 형태로 token 값을 출력
+        response.getWriter().write(new ObjectMapper().writeValueAsString(
+                new HashMap<String, String>() {{
+                    put("token", accessToken);
+                }}
+        ));
+
         response.getWriter().flush();
     }
 
